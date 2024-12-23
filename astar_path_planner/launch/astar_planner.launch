@@ -1,0 +1,116 @@
+<launch>
+    
+    <!-- maximum velocity and acceleration the drone will reach -->
+    <arg name="max_vel_AIR" value="1.0" />
+    <arg name="max_acc_AIR" value="1.0" />
+    <arg name="max_yd_AIR" value="$(eval 60 * 3.1415926 / 180.0)" />
+    <arg name="max_ydd_AIR" value="$(eval 90 * 3.1415926 / 180.0)" />
+
+    <arg name="max_vel_GROUND" value="0.5" />
+    <arg name="max_acc_GROUND" value="0.5" />
+    <arg name="max_yd_GROUND" value="$(eval 40 * 3.1415926 / 180.0)" />
+    <arg name="max_ydd_GROUND" value="$(eval 80 * 3.1415926 / 180.0)" />
+
+      <arg name="p_a" value="7.0"/>
+    <arg name="p_g" value="1.0"/> 
+      <arg name="energy_all" value="500.0"/>
+  <arg name="time_all" value="1800.0"/>
+    
+    <!-- 设置 RViz 配置文件路径 -->
+    <arg name="rviz_config" default="$(find astar_path_planner)/rviz/astar_path_planner.rviz" />
+
+    <!-- 设置地图相关参数，提供默认值 -->
+    <arg name="map_min" default="-5.0" />
+    <arg name="map_max" default="5.0" />
+    <arg name="grid_resolution" default="0.1" />
+
+    <!-- 设置起点和终点，提供默认值 -->
+    <arg name="start_x" default="-4.5" />
+    <arg name="start_y" default="-4.5" />
+    <arg name="goal_x" default="4.5" />
+    <arg name="goal_y" default="4.5" />
+
+    <!-- 启动障碍物生成节点 -->
+    <node pkg="astar_path_planner" type="obstacle_generator" name="obstacle_generator" output="screen">
+        <param name="map_min" value="$(arg map_min)" />
+        <param name="map_max" value="$(arg map_max)" />
+        <param name="grid_resolution" value="$(arg grid_resolution)" />
+        <param name="num_obstacles" value="30.0" />
+        <param name="min_radius" value="0.2" />
+        <param name="max_radius" value="0.5" />
+    </node>
+
+    <!--     启动 A* 路径规划节点-->
+    <node pkg="astar_path_planner" type="astar_planner" name="astar_planner" output="screen">
+        <param name="map_min" value="$(arg map_min)" />
+        <param name="map_max" value="$(arg map_max)" />
+        <param name="grid_resolution" value="$(arg grid_resolution)" />
+        <param name="start_x" value="$(arg start_x)" />
+        <param name="start_y" value="$(arg start_y)" />
+        <param name="goal_x" value="$(arg goal_x)" />
+        <param name="goal_y" value="$(arg goal_y)" />
+
+    <!-- trajectory optimization -->
+
+    <param name="optimization/K" value="32"/>
+    <param name="optimization/pok" value="0.3"/>
+    <param name="optimization/vmax_ground" value="$(arg max_vel_GROUND)" type="double"/>
+    <param name="optimization/amax_ground" value="$(arg max_acc_GROUND)" type="double"/>
+    <param name="optimization/vmax_air" value="$(arg max_vel_AIR)" type="double"/>
+    <param name="optimization/amax_air" value="$(arg max_acc_AIR)" type="double"/>
+    <param name="optimization/omegamax" value="$(arg max_yd_GROUND)" type="double"/>
+    <param name="optimization/domegamax" value="$(arg max_ydd_GROUND)" type="double"/>
+    <param name="optimization/vmaxz" value="0.7"/>
+    <param name="optimization/amaxz" value="0.7"/>
+    <param name="optimization/vmin" value="0.005"/>
+    <param name="optimization/rhoT" value="1000.0"/>
+    <param name="optimization/rhoP" value="300000.0"/>
+    <param name="optimization/rhoPz" value="10000.0"/>
+    <param name="optimization/rhoV" value="10000.0"/>   <!-- cost V: 10e1 -->
+    <param name="optimization/rhoA" value="100000.0"/> <!-- cost A: 10e-4 -->
+    <param name="optimization/rhoOmega" value="500000"/> <!-- cost W: 10e1 -->
+    <param name="optimization/rhodOmega" value="50000"/> <!-- cost dW: 10e2 -->
+    <param name="optimization/pause_debug" value="false"/>
+
+
+    <param name="bspline/limit_vel" value="$(arg max_vel_AIR)" type="double"/>
+    <param name="bspline/limit_acc" value="$(arg max_acc_AIR)" type="double"/>
+    <param name="bspline/limit_ratio" value="1.1" type="double"/>
+
+    <param name="bspline/limit_vel" value="$(arg max_vel_AIR)" type="double"/>
+    <param name="bspline/limit_acc" value="$(arg max_acc_AIR)" type="double"/>
+    <param name="bspline/limit_ratio" value="1.1" type="double"/>
+
+
+    <param name="pmcst/is_debug" value="false" type="bool"/>
+    <param name="pmcst/max_iter" value="10" type="int"/>
+    <param name="pmcst/explore_weight" value="0.1" type="double"/>
+    <param name="pmcst/v_g_max" value="$(arg max_vel_GROUND)" type="double"/>
+    <param name="pmcst/v_a_max" value="$(arg max_vel_AIR)" type="double"/>
+    <param name="pmcst/yd_a_max" value="$(arg max_yd_AIR)" type="double"/>
+    <param name="pmcst/yd_g_max" value="$(arg max_yd_GROUND)" type="double"/>
+    <param name="pmcst/p_g" value="$(arg p_g)" type="double"/>
+    <param name="pmcst/p_a" value="$(arg p_a)" type="double"/>
+    <param name="pmcst/effct_R" value="10000.0" type="double"/>
+    <param name="pmcst/energy_all" value="$(arg energy_all)" type="double"/>
+    <param name="pmcst/time_all" value="$(arg time_all)" type="double"/>
+    <param name="pmcst/breaking_ratio_e" value="0.5" type="double"/>
+    <param name="pmcst/breaking_ratio_t" value="0.7" type="double"/>
+    <param name="pmcst/max_e_weight" value="70.0" type="double"/>
+    <param name="pmcst/max_t_weight" value="50.0" type="double"/>
+    <param name="pmcst/best_e_weight" value="10.0" type="double"/>
+    <param name="pmcst/best_t_weight" value="10.0" type="double"/>
+    <param name="pmcst/e_change_cost" value="0.0" type="double"/>
+    <param name="pmcst/t_change_cost" value="0.0" type="double"/>
+    <param name="pmcst/potential_child_time_threshold" value="5.0" type="double"/>
+    </node>
+
+    <!--    启动轨迹生成节点-->
+    <!--    your code-->
+
+
+
+
+    <!-- 启动 RViz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config)" />
+</launch>

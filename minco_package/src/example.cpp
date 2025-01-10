@@ -11,7 +11,7 @@ void main()
 
     minco_traj_optimizer.reset(new TrajOpt);
     minco_traj_optimizer -> setParam(nh);
-    //minco_traj_optimizer -> setEnvironment(sdf_map);        //若使用ESDF约束，需要给优化器传递地图类对象
+    // minco_traj_optimizer -> setEnvironment(sdf_map);        //若使用ESDF约束，需要给优化器传递地图类对象
 
     bool ret_opt;
     MatrixXd initState  = MatrixXd::Zero(3,3);
